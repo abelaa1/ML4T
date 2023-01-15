@@ -4,7 +4,7 @@
 
 # ML4T_2020 Summer
 
-Abel Aguilars Repo Sring 2023
+Abel Aguilar's Repo Sring 2023
 
 Course website: http://lucylabs.gatech.edu/ml4t/
 
