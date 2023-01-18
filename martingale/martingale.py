@@ -21,12 +21,14 @@ GT honor code violation.
   		  	   		  		 			  		 			     			  	 
 -----do not edit anything above this line---  		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
-Student Name: Tucker Balch (replace with your name)  		  	   		  		 			  		 			     			  	 
-GT User ID: tb34 (replace with your User ID)  		  	   		  		 			  		 			     			  	 
-GT ID: 900897987 (replace with your GT ID)  		  	   		  		 			  		 			     			  	 
+Student Name: Abel Aguilar		  	   		  		 			  		 			     			  	 
+GT User ID: aaguilar61 		  	   		  		 			  		 			     			  	 
+GT ID: 903861561		  	   		  		 			  		 			     			  	 
 """  		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
-import numpy as np  		  	   		  		 			  		 			     			  	 
+import numpy as np  
+import pandas as pd
+import matplotlib.pyplot as plt		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
 def author():  		  	   		  		 			  		 			     			  	 
@@ -34,7 +36,7 @@ def author():
     :return: The GT username of the student  		  	   		  		 			  		 			     			  	 
     :rtype: str  		  	   		  		 			  		 			     			  	 
     """  		  	   		  		 			  		 			     			  	 
-    return "tb34"  # replace tb34 with your Georgia Tech username.  		  	   		  		 			  		 			     			  	 
+    return "aaguilar61"  # replace tb34 with your Georgia Tech username.  		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
 def gtid():  		  	   		  		 			  		 			     			  	 
@@ -42,7 +44,7 @@ def gtid():
     :return: The GT ID of the student  		  	   		  		 			  		 			     			  	 
     :rtype: int  		  	   		  		 			  		 			     			  	 
     """  		  	   		  		 			  		 			     			  	 
-    return 900897987  # replace with your GT ID number  		  	   		  		 			  		 			     			  	 
+    return 903861561  # replace with your GT ID number  		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
 def get_spin_result(win_prob):  		  	   		  		 			  		 			     			  	 
@@ -59,15 +61,109 @@ def get_spin_result(win_prob):
         result = True  		  	   		  		 			  		 			     			  	 
     return result  		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
-  		  	   		  		 			  		 			     			  	 
+
+def getNParrayOne(episodeNum, prob):
+    arr = np.empty([episodeNum,1001], dtype=int)
+    for x in range(episodeNum):
+        episode_winning = 0
+        bet_amount = 1
+        for y in range(1001):
+            arr[x][y] = episode_winning
+            if episode_winning < 80:
+                won = get_spin_result(prob)
+                if won:
+                    episode_winning += bet_amount
+                    bet_amount = 1
+                else:
+                    episode_winning -= bet_amount
+                    bet_amount *= 2
+    return arr
+
+def getNParrayTwo(episodeNum, prob):
+    arr = np.empty([episodeNum,1001], dtype=int)
+    for x in range(episodeNum):
+        episode_winning = 0
+        bet_amount = 1
+        for y in range(1001):
+            arr[x][y] = episode_winning
+            if episode_winning < 80 and episode_winning > -256:
+                won = get_spin_result(prob)
+                if won:
+                    episode_winning += bet_amount
+                    bet_amount = 1
+                else:
+                    episode_winning -= bet_amount
+                    bet_amount *= 2
+                    if bet_amount > (episode_winning+256):
+                        bet_amount = episode_winning+256
+    return arr
+
 def test_code():  		  	   		  		 			  		 			     			  	 
     """  		  	   		  		 			  		 			     			  	 
     Method to test your code  		  	   		  		 			  		 			     			  	 
     """  		  	   		  		 			  		 			     			  	 
-    win_prob = 0.60  # set appropriately to the probability of a win  		  	   		  		 			  		 			     			  	 
+    win_prob = 0.474  # set appropriately to the probability of a win  		  	   		  		 			  		 			     			  	 
     np.random.seed(gtid())  # do this only once  		  	   		  		 			  		 			     			  	 
-    print(get_spin_result(win_prob))  # test the roulette spin  		  	   		  		 			  		 			     			  	 
-    # add your code here to implement the experiments  		  	   		  		 			  		 			     			  	 
+    # Experiment 1 10 episodes
+    arr = getNParrayOne(10,win_prob)
+    df = pd.DataFrame(arr).T
+    df.plot() 
+    plt.xlim([0,300])
+    plt.ylim([-256,160])
+    plt.show()		 			  		 			     			  	 
+    
+    #Experiment 1 1000 episodes mean
+    arr = getNParrayOne(1000,win_prob)
+    df = pd.DataFrame(arr).mean()
+    dfstd = pd.DataFrame(arr).std()
+    upper_band = df + dfstd
+    lower_band = df - dfstd
+    upper_band.plot()
+    lower_band.plot()
+    df.plot() 
+    plt.xlim([0,300])
+    plt.ylim([-256,160])
+    plt.show() 	
+
+    #Experiment 1 1000 episodes median
+    arr = getNParrayOne(1000,win_prob)
+    df = pd.DataFrame(arr).median()
+    dfstd = pd.DataFrame(arr).std()
+    upper_band = df + dfstd
+    lower_band = df - dfstd
+    upper_band.plot()
+    lower_band.plot()
+    df.plot() 
+    plt.xlim([0,300])
+    plt.ylim([-256,160])
+    plt.show()
+
+
+    #Experiment 2 1000 episodes mean
+    arr = getNParrayTwo(1000,win_prob)
+    df = pd.DataFrame(arr).mean()
+    dfstd = pd.DataFrame(arr).std()
+    upper_band = df + dfstd
+    lower_band = df - dfstd
+    upper_band.plot()
+    lower_band.plot()
+    df.plot() 
+    plt.xlim([0,300])
+    plt.ylim([-256,200])
+    plt.show() 	
+
+    #Experiment 2 1000 episodes median
+    arr = getNParrayTwo(1000,win_prob)
+    df = pd.DataFrame(arr).median()
+    dfstd = pd.DataFrame(arr).std()
+    upper_band = df + dfstd
+    lower_band = df - dfstd
+    upper_band.plot()
+    lower_band.plot()
+    df.plot() 
+    plt.xlim([0,300])
+    plt.ylim([-256,300])
+    plt.show() 	 		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
 if __name__ == "__main__":  		  	   		  		 			  		 			     			  	 
