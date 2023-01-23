@@ -28,7 +28,8 @@ GT ID: 903861561
   		  	   		  		 			  		 			     			  	 
 import numpy as np  
 import pandas as pd
-import matplotlib.pyplot as plt		  	   		  		 			  		 			     			  	 
+import matplotlib.pyplot as plt	
+from scipy.stats import binom	  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
 def author():  		  	   		  		 			  		 			     			  	 
@@ -105,14 +106,20 @@ def test_code():
     win_prob = 0.474  # set appropriately to the probability of a win  		  	   		  		 			  		 			     			  	 
     np.random.seed(gtid())  # do this only once  		  	   		  		 			  		 			     			  	 
     # Experiment 1 10 episodes
+    plt.clf()
     arr = getNParrayOne(10,win_prob)
     df = pd.DataFrame(arr).T
     df.plot() 
+    plt.legend(["Episode 1", "Episode 2", "Episode 3", "Episode 4", "Episode 5", "Episode 6", "Episode 7", "Episode 8", "Episode 9", "Episode 10"])
+    plt.title("Figure#1 10 Episodes Unlimted Bank Roll")
+    plt.xlabel("Spins")
+    plt.ylabel("Winnings")
     plt.xlim([0,300])
-    plt.ylim([-256,160])
-    plt.show()		 			  		 			     			  	 
+    plt.ylim([-256,250])
+    plt.savefig("images/figure1.png")	#code was taken from https://www.geeksforgeeks.org/matplotlib-pyplot-savefig-in-python/  proper citaion in p1_martingale_report.pdf		  		 			     			  	 
     
     #Experiment 1 1000 episodes mean
+    plt.clf()
     arr = getNParrayOne(1000,win_prob)
     df = pd.DataFrame(arr).mean()
     dfstd = pd.DataFrame(arr).std()
@@ -121,11 +128,41 @@ def test_code():
     upper_band.plot()
     lower_band.plot()
     df.plot() 
+    plt.legend(["Mean Plus STD", "Mean Minus STD", "Mean"])
+    plt.title("Figure#2 1000 Episodes Unlimted Bank Roll - Mean")
+    plt.xlabel("Spins")
+    plt.ylabel("Winnings")
     plt.xlim([0,300])
-    plt.ylim([-256,160])
-    plt.show() 	
+    plt.ylim([-256,250])
+    plt.savefig("images/figure2.png")	 
+    #used to find STD maxs and mins
+    max1 = np.max(upper_band)
+    min1 = np.min(lower_band)
+    # print(min1)
+    # print(max1)
+    #used to find if all episodes ended in 80
+    # print(arr[:, -1])
+
+    #code was taken from https://www.geeksforgeeks.org/python-binomial-distribution/  proper citaion in p1_martingale_report.pdf
+    plt.clf()
+    n = 1000
+    p = 0.474
+    r_values = list(range(n + 1))
+    dist = [binom.pmf(r, n, p) for r in r_values ]
+    # used to find probabilty of at least 80 wins happen
+    tot_prob = 0
+    for i in range(80 + 1):
+        tot_prob += dist[i]
+    # print(tot_prob)
+    plt.title("Figure BD Probability of winning X spins")
+    plt.xlabel("Spins")
+    plt.ylabel("Probability")
+    plt.fill_between(r_values[81:1001], dist[81:1001] ,color='blue',alpha=0.2)
+    plt.plot(r_values, dist)
+    plt.savefig("images/BinomialDistributionUnlimitedBank.png")
 
     #Experiment 1 1000 episodes median
+    plt.clf()
     arr = getNParrayOne(1000,win_prob)
     df = pd.DataFrame(arr).median()
     dfstd = pd.DataFrame(arr).std()
@@ -134,12 +171,17 @@ def test_code():
     upper_band.plot()
     lower_band.plot()
     df.plot() 
+    plt.legend(["Median Plus STD", "Median Minus STD", "Median"])
+    plt.title("Figure#3 1000 Episodes Unlimted Bank Roll - Median")
+    plt.xlabel("Spins")
+    plt.ylabel("Winnings")
     plt.xlim([0,300])
-    plt.ylim([-256,160])
-    plt.show()
+    plt.ylim([-256,250])
+    plt.savefig("images/figure3.png")	 
 
 
     #Experiment 2 1000 episodes mean
+    plt.clf()
     arr = getNParrayTwo(1000,win_prob)
     df = pd.DataFrame(arr).mean()
     dfstd = pd.DataFrame(arr).std()
@@ -148,11 +190,34 @@ def test_code():
     upper_band.plot()
     lower_band.plot()
     df.plot() 
+    plt.legend(["Mean Plus STD", "Mean Minus STD", "Mean"])
+    plt.title("Figure#4 1000 Episodes $256 Bank Roll - Mean")
+    plt.xlabel("Spins")
+    plt.ylabel("Winnings")
     plt.xlim([0,300])
-    plt.ylim([-256,200])
-    plt.show() 	
+    plt.ylim([-256,250])
+    plt.savefig("images/figure4.png")	
+
+    # used to find experiemental odds of winning 80 or losing 256
+    count = 0
+    fail = 0
+    for x in arr[:, -1]:
+        if x == 80:
+            count += 1
+        elif x == -256:
+            fail += 1
+    # print(count) 
+    # print(fail)
+    # used to find expected menan
+    # arr1 = np.mean(arr[:, -1])
+    #used to find STD maxs and mins
+    max1 = np.max(upper_band)
+    min1 = np.min(lower_band)
+    # print(max1)
+    # print(min1)
 
     #Experiment 2 1000 episodes median
+    plt.clf()
     arr = getNParrayTwo(1000,win_prob)
     df = pd.DataFrame(arr).median()
     dfstd = pd.DataFrame(arr).std()
@@ -161,9 +226,13 @@ def test_code():
     upper_band.plot()
     lower_band.plot()
     df.plot() 
+    plt.legend(["Median Plus STD", "Median Minus STD", "Median"])
+    plt.title("Figure#5 1000 Episodes $256 Bank Roll - Median")
+    plt.xlabel("Spins")
+    plt.ylabel("Winnings")
     plt.xlim([0,300])
-    plt.ylim([-256,300])
-    plt.show() 	 		  	   		  		 			  		 			     			  	 
+    plt.ylim([-256,250])
+    plt.savefig("images/figure5.png")	 		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
 if __name__ == "__main__":  		  	   		  		 			  		 			     			  	 
