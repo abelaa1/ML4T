@@ -6,7 +6,7 @@ All Rights Reserved
 """  		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
 import datetime as dt  		  	   		  		 			  		 			     			  	 
-  		  	   		  		 			  		 			     			  	 
+import math as m	  	   		  		 			  		 			     			  	 
 import numpy as np  		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
 import pandas as pd  		  	   		  		 			  		 			     			  	 
@@ -52,31 +52,49 @@ def assess_portfolio(
   		  	   		  		 			  		 			     			  	 
     # Read in adjusted closing prices for given symbols, date range  		  	   		  		 			  		 			     			  	 
     dates = pd.date_range(sd, ed)  		  	   		  		 			  		 			     			  	 
-    prices_all = get_data(syms, dates)  # automatically adds SPY  		  	   		  		 			  		 			     			  	 
+    prices_all = get_data(syms, dates)  # automatically adds SPY  	
+    prices_all.fillna(method="ffill", inplace=True)
+    prices_all.fillna(method="bfill", inplace=True)	
+    prices_all = prices_all.dropna()	  		 			     			  	 
     prices = prices_all[syms]  # only portfolio symbols  		  	   		  		 			  		 			     			  	 
     prices_SPY = prices_all["SPY"]  # only SPY, for comparison later  		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
-    # Get daily portfolio value  		  	   		  		 			  		 			     			  	 
-    port_val = prices_SPY  # add code here to compute daily portfolio values  		  	   		  		 			  		 			     			  	 
-  		  	   		  		 			  		 			     			  	 
+    # Get daily portfolio value  
+    normed = prices/ prices.iloc[0,:] 
+    alloced = normed * allocs
+    pos_vals = alloced * sv
+    port_val = pos_vals.sum(axis=1)# add code here to compute daily portfolio values  		  	   		  		 			  		 			     			  	 
+
+    daily_returns = port_val.copy()
+    daily_returns = (port_val / port_val.shift(1)) - 1           
+
+    daily_returns = daily_returns[1:]
+    cum_ret = (port_val[-1]/port_val[0] - 1)
+    avg_daily_ret = daily_returns.mean()
+    std_daily_ret = daily_returns.std() 
+
+    SR = m.sqrt(sf) * (avg_daily_ret - rfr) / std_daily_ret   
+                                          	  	 
     # Get portfolio statistics (note: std_daily_ret = volatility)  		  	   		  		 			  		 			     			  	 
     cr, adr, sddr, sr = [  		  	   		  		 			  		 			     			  	 
-        0.25,  		  	   		  		 			  		 			     			  	 
-        0.001,  		  	   		  		 			  		 			     			  	 
-        0.0005,  		  	   		  		 			  		 			     			  	 
-        2.1,  		  	   		  		 			  		 			     			  	 
+        cum_ret,  		  	   		  		 			  		 			     			  	 
+        avg_daily_ret,  		  	   		  		 			  		 			     			  	 
+        std_daily_ret,  		  	   		  		 			  		 			     			  	 
+        SR,  		  	   		  		 			  		 			     			  	 
     ]  # add code here to compute stats  		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
     # Compare daily portfolio value with SPY using a normalized plot  		  	   		  		 			  		 			     			  	 
     if gen_plot:  		  	   		  		 			  		 			     			  	 
-        # add code to plot here  		  	   		  		 			  		 			     			  	 
+        # add code to plot here 
+        normed_port = port_val/ port_val.iloc[0] 
+        normed_spy = prices_SPY/ prices_SPY.iloc[0] 	  	   		  		 			  		 			     			  	 
         df_temp = pd.concat(  		  	   		  		 			  		 			     			  	 
-            [port_val, prices_SPY], keys=["Portfolio", "SPY"], axis=1  		  	   		  		 			  		 			     			  	 
+            [normed_port, normed_spy], keys=["Portfolio", "SPY"], axis=1  		  	   		  		 			  		 			     			  	 
         )  		  	   		  		 			  		 			     			  	 
-        pass  		  	   		  		 			  		 			     			  	 
+        plot_data(df_temp,"SPY vs PortVal")  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
     # Add code here to properly compute end value  		  	   		  		 			  		 			     			  	 
-    ev = sv  		  	   		  		 			  		 			     			  	 
+    ev = port_val[-1] 		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
     return cr, adr, sddr, sr, ev  		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
@@ -106,7 +124,7 @@ def test_code():
         syms=symbols,  		  	   		  		 			  		 			     			  	 
         allocs=allocations,  		  	   		  		 			  		 			     			  	 
         sv=start_val,  		  	   		  		 			  		 			     			  	 
-        gen_plot=False,  		  	   		  		 			  		 			     			  	 
+        gen_plot=True,  		  	   		  		 			  		 			     			  	 
     )  		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
     # Print statistics  		  	   		  		 			  		 			     			  	 
