@@ -131,6 +131,7 @@ def optimize_portfolio(
 
     cons = ({'type': 'eq', 'fun': lambda x:  np.sum(x) - 1}) #add up to one
     bnds = tuple((0,1) for x in range(len(syms))) # stay between 0 and 1
+    # https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html used for function, full citation in report
     result = spo.minimize(findSR, allocs, args=(prices,), method = 'SLSQP', bounds=bnds ,constraints=cons)
     allocs = result.x
 
@@ -147,8 +148,8 @@ def optimize_portfolio(
         )  		  	   		  		 			  		 			     			  	 
         # plot_data(df_temp,"SPY vs PortVal")  
         ax = df_temp.plot()
-        #adding watermark
-        #ax.text(0.5, 0.5, 'aaguilar61', transform=ax.transAxes,fontsize=40, color='gray', alpha=0.5,ha='center', va='center', rotation=30)
+        # adding watermark https://matplotlib.org/stable/gallery/text_labels_and_annotations/watermark_text.html, full citation in report
+        # ax.text(0.5, 0.5, 'aaguilar61', transform=ax.transAxes,fontsize=40, color='gray', alpha=0.5,ha='center', va='center', rotation=30)
         plt.grid()
         plt.legend(["Portfolio", "SPY"])
         plt.title("SPY vs Optimized Portfolio")
