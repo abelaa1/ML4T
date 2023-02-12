@@ -43,11 +43,7 @@ if __name__ == "__main__":
     data = np.array(  		  	   		  		 			  		 			     			  	 
         [list(map(float, s.split(",", 1)[1].strip().split(","))) for s in inf.readlines()]  		  	   		  		 			  		 			     			  	 
     )  		  	   		  		 			  		 			     			  	 
-
-    # data = np.array(  		  	   		  		 			  		 			     			  	 
-    #     [list(map(float, s.strip().split(","))) for s in inf.readlines()]  		  	   		  		 			  		 			     			  	 
-    # ) 
-
+  		  	   		  		 			  		 			     			  	 
     # compute how much of the data is training and testing  		  	   		  		 			  		 			     			  	 
     train_rows = int(0.6 * data.shape[0])  		  	   		  		 			  		 			     			  	 
     test_rows = data.shape[0] - train_rows  		  	   		  		 			  		 			     			  	 
@@ -62,8 +58,8 @@ if __name__ == "__main__":
     print(f"{test_y.shape}")  	
 
     # #dtlearner
-    dtlearner = dt.DTLearner(leaf_size = 1, verbose = False) # constructor  
-    dtlearner.add_evidence(train_x, train_y)  # training step   
+    # dtlearner = dt.DTLearner(leaf_size = 1, verbose = False) # constructor  
+    # dtlearner.add_evidence(train_x, train_y)  # training step   
     # pred_y = dtlearner.query(train_x) 	  
 
     # #rtlearner
@@ -77,8 +73,8 @@ if __name__ == "__main__":
     # pred_y = baglearner.query(train_x)                                    
 
     # #Insanelearner
-    # itlearner = it.InsaneLearner(verbose = False) # constructor  
-    # itlearner.add_evidence(train_x, train_y)  # training step   
+    itlearner = it.InsaneLearner(verbose = False) # constructor  
+    itlearner.add_evidence(train_x, train_y)  # training step   
     # pred_y = itlearner.query(train_x)  
 
     # # create a learner and train it  		  	   		  		 			  		 			     			  	 
@@ -87,7 +83,7 @@ if __name__ == "__main__":
     # print(learner.author())  		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
     # evaluate in sample  		  	   		  		 			  		 			     			  	 
-    pred_y = dtlearner.query(train_x)  # get the predictions  		  	   		  		 			  		 			     			  	 
+    pred_y = itlearner.query(train_x)  # get the predictions  		  	   		  		 			  		 			     			  	 
     rmse = math.sqrt(((train_y - pred_y) ** 2).sum() / train_y.shape[0])  		  	   		  		 			  		 			     			  	 
     print()  		  	   		  		 			  		 			     			  	 
     print("In sample results")  		  	   		  		 			  		 			     			  	 
@@ -96,7 +92,7 @@ if __name__ == "__main__":
     print(f"corr: {c[0,1]}")  		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
     # evaluate out of sample  		  	   		  		 			  		 			     			  	 
-    pred_y = dtlearner.query(test_x)  # get the predictions  		  	   		  		 			  		 			     			  	 
+    pred_y = itlearner.query(test_x)  # get the predictions  		  	   		  		 			  		 			     			  	 
     rmse = math.sqrt(((test_y - pred_y) ** 2).sum() / test_y.shape[0])  		  	   		  		 			  		 			     			  	 
     print()  		  	   		  		 			  		 			     			  	 
     print("Out of sample results")  		  	   		  		 			  		 			     			  	 
