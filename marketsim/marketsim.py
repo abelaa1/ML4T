@@ -99,6 +99,8 @@ def compute_portvals(
     """  		  	   		  		 			  		 			     			  	 	  	   		  		 			  		 			     			  	 		 
     
     orders_df = pd.read_csv(orders_file, index_col='Date', parse_dates=True, na_values=['nan']) 
+    # https://www.geeksforgeeks.org/how-to-sort-a-pandas-dataframe-by-date/
+    # sorting orders by date
     orders_df = orders_df.sort_values(by='Date',ascending=True)
 
     sym = set()
@@ -111,17 +113,27 @@ def compute_portvals(
     prices_all.fillna(method="bfill", inplace=True)	
     prices_all = prices_all.dropna()	  		 			     			  	 
     prices = prices_all[sym]  # only portfolio symbols 
+    # https://www.interviewqs.com/ddi-code-snippets/add-new-col-df-default-value
+    # setting a new default value for cash
     prices['Cash'] = 1.0
 
+    # https://www.w3schools.com/python/pandas/ref_df_copy.asp
+    # coping dataframe
     trades = prices.copy()
     for x in trades:
         trades[x] = 0.0
 
+    # https://www.geeksforgeeks.org/different-ways-to-iterate-over-rows-in-pandas-dataframe/
+    # iterate over prices dataframe
     for x in prices.index:
+        # https://www.geeksforgeeks.org/check-if-a-value-exists-in-a-dataframe-using-in-not-in-operator-in-python-pandas/
+        # check if index exists in orders
         if x in orders_df.index:
             symb = orders_df['Symbol'][x]
             order = orders_df['Order'][x]
             shares = orders_df['Shares'][x]
+            # https://www.geeksforgeeks.org/python-check-if-a-variable-is-string/
+            # check if order is a str or list
             if type(order) != str:
                 for i in range(len(order)):
                     if order[i] == 'SELL':
@@ -178,8 +190,7 @@ def test_code():
     else:  		  	   		  		 			  		 			     			  	 
         "warning, code did not return a DataFrame"  		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
-    # Get portfolio stats  		  	   		  		 			  		 			     			  	 
-    # Here we just fake the data. you should use your code from previous assignments.  		  	   		  		 			  		 			     			  	 		  	   		  		 			  		 			     			  	 
+    # Get portfolio stats
     cum_ret, avg_daily_ret, std_daily_ret, sharpe_ratio = findPortStats(portvals)	
 
     compare = ['$SPX']
