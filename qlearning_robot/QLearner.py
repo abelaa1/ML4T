@@ -22,14 +22,21 @@ GT honor code violation.
   		  	   		  		 			  		 			     			  	 
 -----do not edit anything above this line---  		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
-Student Name: Tucker Balch (replace with your name)  		  	   		  		 			  		 			     			  	 
-GT User ID: tb34 (replace with your User ID)  		  	   		  		 			  		 			     			  	 
-GT ID: 900897987 (replace with your GT ID)  		  	   		  		 			  		 			     			  	 
+Student Name: Abel Aguilar 		  	   		  		 			  		 			     			  	 
+GT User ID: aaguilar61 		  	   		  		 			  		 			     			  	 
+GT ID: 903861561	  	   		  		 			  		 			     			  	 
 """  		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
 import random as rand  		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
-import numpy as np  		  	   		  		 			  		 			     			  	 
+import numpy as np  
+
+def author():  		  	   		  		 			  		 			     			  	 
+    """  		  	   		  		 			  		 			     			  	 
+    :return: The GT username of the student  		  	   		  		 			  		 			     			  	 
+    :rtype: str  		  	   		  		 			  		 			     			  	 
+    """  		  	   		  		 			  		 			     			  	 
+    return "aaguilar61"
   		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
 class QLearner(object):  		  	   		  		 			  		 			     			  	 
@@ -52,7 +59,14 @@ class QLearner(object):
     :type dyna: int  		  	   		  		 			  		 			     			  	 
     :param verbose: If “verbose” is True, your code can print out information for debugging.  		  	   		  		 			  		 			     			  	 
     :type verbose: bool  		  	   		  		 			  		 			     			  	 
-    """  		  	   		  		 			  		 			     			  	 
+    """  
+    def author(self):  		  	   		  		 			  		 			     			  	 
+        """  		  	   		  		 			  		 			     			  	 
+        :return: The GT username of the student  		  	   		  		 			  		 			     			  	 
+        :rtype: str  		  	   		  		 			  		 			     			  	 
+        """  		  	   		  		 			  		 			     			  	 
+        return "aaguilar61"
+		  	   		  		 			  		 			     			  	 
     def __init__(  		  	   		  		 			  		 			     			  	 
         self,  		  	   		  		 			  		 			     			  	 
         num_states=100,  		  	   		  		 			  		 			     			  	 
@@ -66,12 +80,27 @@ class QLearner(object):
     ):  		  	   		  		 			  		 			     			  	 
         """  		  	   		  		 			  		 			     			  	 
         Constructor method  		  	   		  		 			  		 			     			  	 
-        """  		  	   		  		 			  		 			     			  	 
+        """  	
+        self.visited = []  	
+        self.visited_act = {}   		  		 			  		 			     			  	 
         self.verbose = verbose  		  	   		  		 			  		 			     			  	 
-        self.num_actions = num_actions  		  	   		  		 			  		 			     			  	 
+        self.num_actions = num_actions  
+        self.num_states = num_states	  	   		  		 			  		 			     			  	 
         self.s = 0  		  	   		  		 			  		 			     			  	 
-        self.a = 0  		  	   		  		 			  		 			     			  	 
-  		  	   		  		 			  		 			     			  	 
+        self.a = 0  
+        self.alpha = alpha
+        self.gamma = gamma
+        self.rar = rar
+        self.radr = radr
+        self.dyna = dyna
+        self.Q_table = np.zeros((num_states, num_actions))
+
+        if self.dyna != 0:
+            self.T = np.zeros((num_states, num_actions, num_states))
+            self.T_c = np.zeros((num_states, num_actions, num_states))
+            self.T_c.fill(0.0001)
+            self.R = np.zeros((num_states, num_actions))
+        
     def querysetstate(self, s):  		  	   		  		 			  		 			     			  	 
         """  		  	   		  		 			  		 			     			  	 
         Update the state without updating the Q-table  		  	   		  		 			  		 			     			  	 
@@ -97,12 +126,47 @@ class QLearner(object):
         :type r: float  		  	   		  		 			  		 			     			  	 
         :return: The selected action  		  	   		  		 			  		 			     			  	 
         :rtype: int  		  	   		  		 			  		 			     			  	 
-        """  		  	   		  		 			  		 			     			  	 
-        action = rand.randint(0, self.num_actions - 1)  		  	   		  		 			  		 			     			  	 
+        """  	
+            
+        self.Q_table[self.s][self.a] = (((1-self.alpha) * self.Q_table[self.s][self.a]) + self.alpha*(r + self.gamma * self.Q_table[s_prime][np.argmax(self.Q_table[s_prime])]))
+
+        if np.random.uniform(0.0, 1.0) < self.rar:
+            action = rand.randint(0, self.num_actions - 1)
+        else:
+            action = np.argmax(self.Q_table[s_prime,:])
+        self.rar *= self.radr
+
+        if self.dyna != 0:
+            # creating dicts https://www.geeksforgeeks.org/python-ways-to-create-a-dictionary-of-lists/
+            if self.s not in self.visited:
+                self.visited.append(self.s)
+                self.visited_act[self.s] = []
+                self.visited_act[self.s].append(self.a)
+            else:
+                self.visited_act[self.s].append(self.a)
+
+            self.T_c[self.s][self.a][s_prime] += 1
+            self.T[self.s][self.a][s_prime] = self.T_c[self.s][self.a][s_prime]/np.sum(self.T_c[self.s][self.a])
+            self.R[self.s][self.a] = (1-self.alpha) * self.R[self.s][self.a] + (self.alpha * r)
+
+            for i in range(self.dyna):
+                # random choice https://numpy.org/doc/stable/reference/random/generated/numpy.random.choice.html
+                s_d = rand.choice(self.visited)
+                a_d = rand.choice(self.visited_act[s_d])
+                s_prime_d = np.argmax(self.T[s_d][a_d])
+                r_d = self.R[s_d][a_d]
+
+                self.Q_table[s_d][a_d] = (((1-self.alpha) * self.Q_table[s_d][a_d]) + self.alpha*(r_d + self.gamma * self.Q_table[s_prime_d][np.argmax(self.Q_table[s_prime_d])]))
+
+        self.s = s_prime
+        self.a = action
+ 		  	   		  		 			  		 			     			  	 
         if self.verbose:  		  	   		  		 			  		 			     			  	 
             print(f"s = {s_prime}, a = {action}, r={r}")  		  	   		  		 			  		 			     			  	 
         return action  		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
 if __name__ == "__main__":  		  	   		  		 			  		 			     			  	 
-    print("Remember Q from Star Trek? Well, this isn't him")  		  	   		  		 			  		 			     			  	 
+    print("Remember Q from Star Trek? Well, this isn't him")  		 
+
+    # notes used https://www.omscs-notes.com/machine-learning-trading/q-learning/ 	   		  		 			  		 			     			  	 
