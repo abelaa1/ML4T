@@ -22,9 +22,9 @@ GT honor code violation.
   		  	   		  		 			  		 			     			  	 
 -----do not edit anything above this line---  		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
-Student Name: Tucker Balch (replace with your name)  		  	   		  		 			  		 			     			  	 
-GT User ID: tb34 (replace with your User ID)  		  	   		  		 			  		 			     			  	 
-GT ID: 900897987 (replace with your GT ID)  		  	   		  		 			  		 			     			  	 
+Student Name: Abel Aguilar		  	   		  		 			  		 			     			  	 
+GT User ID: aaguilar61  		  	   		  		 			  		 			     			  	 
+GT ID: 903861561 		  	   		  		 			  		 			     			  	 
 """  		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
 import datetime as dt  		  	   		  		 			  		 			     			  	 
@@ -53,7 +53,14 @@ class StrategyLearner(object):
         """  		  	   		  		 			  		 			     			  	 
         self.verbose = verbose  		  	   		  		 			  		 			     			  	 
         self.impact = impact  		  	   		  		 			  		 			     			  	 
-        self.commission = commission  		  	   		  		 			  		 			     			  	 
+        self.commission = commission  
+
+    def author(self):  		  	   		  		 			  		 			     			  	 
+        """  		  	   		  		 			  		 			     			  	 
+        :return: The GT username of the student  		  	   		  		 			  		 			     			  	 
+        :rtype: str  		  	   		  		 			  		 			     			  	 
+        """  		  	   		  		 			  		 			     			  	 
+        return "aaguilar61"		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
     # this method should create a QLearner, and train it for trading  		  	   		  		 			  		 			     			  	 
     def add_evidence(  		  	   		  		 			  		 			     			  	 
@@ -128,7 +135,7 @@ class StrategyLearner(object):
         prices_all = ut.get_data([symbol], dates)  # automatically adds SPY  		  	   		  		 			  		 			     			  	 
         trades = prices_all[[symbol,]]  # only portfolio symbols  		  	   		  		 			  		 			     			  	 
         trades_SPY = prices_all["SPY"]  # only SPY, for comparison later  		  	   		  		 			  		 			     			  	 
-        trades.values[:, :] = 0  # set them all to nothing  		  	   		  		 			  		 			     			  	 
+        trades.values[:, :] = 0  # set them all to nothing  	  	   		  		 			  		 			     			  	 
         trades.values[0, :] = 1000  # add a BUY at the start  		  	   		  		 			  		 			     			  	 
         trades.values[40, :] = -1000  # add a SELL  		  	   		  		 			  		 			     			  	 
         trades.values[41, :] = 1000  # add a BUY  		  	   		  		 			  		 			     			  	 
