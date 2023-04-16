@@ -26,9 +26,13 @@ Student Name: Abel Aguilar
 GT User ID: aaguilar61  		  	   		  		 			  		 			     			  	 
 GT ID: 903861561 		  	   		  		 			  		 			     			  	 
 """  		  	   		  		 			  		 			     			  	 
-  		  	   		  		 			  		 			     			  	 
+import indicators as ind
+import RTLearner as rt
+import BagLearner as bl
+
 import datetime as dt  		  	   		  		 			  		 			     			  	 
-import random  		  	   		  		 			  		 			     			  	 
+import random  
+import numpy as np  		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
 import pandas as pd  		  	   		  		 			  		 			     			  	 
 import util as ut  		  	   		  		 			  		 			     			  	 
@@ -53,7 +57,8 @@ class StrategyLearner(object):
         """  		  	   		  		 			  		 			     			  	 
         self.verbose = verbose  		  	   		  		 			  		 			     			  	 
         self.impact = impact  		  	   		  		 			  		 			     			  	 
-        self.commission = commission  
+        self.commission = commission 
+        self.baglearner = bl.BagLearner(learner = rt.RTLearner, kwargs = {"leaf_size":5}, bags = 20, boost = False, verbose = False)
 
     def author(self):  		  	   		  		 			  		 			     			  	 
         """  		  	   		  		 			  		 			     			  	 
@@ -68,7 +73,11 @@ class StrategyLearner(object):
         symbol="IBM",  		  	   		  		 			  		 			     			  	 
         sd=dt.datetime(2008, 1, 1),  		  	   		  		 			  		 			     			  	 
         ed=dt.datetime(2009, 1, 1),  		  	   		  		 			  		 			     			  	 
-        sv=10000,  		  	   		  		 			  		 			     			  	 
+        sv=10000, 
+        N = 8,
+        YBUY = 0.02,
+        YSELL = -0.01
+
     ):  		  	   		  		 			  		 			     			  	 
         """  		  	   		  		 			  		 			     			  	 
         Trains your strategy learner over a given time frame.  		  	   		  		 			  		 			     			  	 
@@ -85,23 +94,51 @@ class StrategyLearner(object):
   		  	   		  		 			  		 			     			  	 
         # add your code to do learning here  		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
-        # example usage of the old backward compatible util function  		  	   		  		 			  		 			     			  	 
-        syms = [symbol]  		  	   		  		 			  		 			     			  	 
-        dates = pd.date_range(sd, ed)  		  	   		  		 			  		 			     			  	 
-        prices_all = ut.get_data(syms, dates)  # automatically adds SPY  		  	   		  		 			  		 			     			  	 
-        prices = prices_all[syms]  # only portfolio symbols  		  	   		  		 			  		 			     			  	 
-        prices_SPY = prices_all["SPY"]  # only SPY, for comparison later  		  	   		  		 			  		 			     			  	 
-        if self.verbose:  		  	   		  		 			  		 			     			  	 
-            print(prices)  		  	   		  		 			  		 			     			  	 
-  		  	   		  		 			  		 			     			  	 
-        # example use with new colname  		  	   		  		 			  		 			     			  	 
-        volume_all = ut.get_data(  		  	   		  		 			  		 			     			  	 
-            syms, dates, colname="Volume"  		  	   		  		 			  		 			     			  	 
-        )  # automatically adds SPY  		  	   		  		 			  		 			     			  	 
-        volume = volume_all[syms]  # only portfolio symbols  		  	   		  		 			  		 			     			  	 
-        volume_SPY = volume_all["SPY"]  # only SPY, for comparison later  		  	   		  		 			  		 			     			  	 
-        if self.verbose:  		  	   		  		 			  		 			     			  	 
-            print(volume)  		  	   		  		 			  		 			     			  	 
+        TEMAorders = ind.TEMA(symbol,sd,ed)
+        TEMAorders = TEMAorders.to_numpy()
+        min_val = np.min(TEMAorders)
+        max_val = np.max(TEMAorders)
+        # Normalize the array to be between -1 and 1
+        TEMAorders = (2*(TEMAorders - min_val)/(max_val - min_val))
+
+        ROCorders = ind.ROC(symbol,sd,ed)
+        ROCorders = ROCorders.to_numpy()
+        min_val = np.min(ROCorders)
+        max_val = np.max(ROCorders)
+        # Normalize the array to be between -1 and 1
+        ROCorders = (2*(ROCorders - min_val)/(max_val - min_val)) - 1
+
+        RSIorders = ind.RSI(symbol,sd,ed)	
+        RSIorders = RSIorders.to_numpy()
+        min_val = np.min(RSIorders)
+        max_val = np.max(RSIorders)
+        # Normalize the array to be between -1 and 1
+        RSIorders = (2*(RSIorders - min_val)/(max_val - min_val))
+
+        # https://numpy.org/doc/stable/reference/generated/numpy.column_stack.html
+        orders = np.column_stack((TEMAorders, ROCorders ,RSIorders))
+
+        dates = pd.date_range(sd, ed)  
+        sym = []
+        sym.append(symbol)
+        prices = ut.get_data(sym, dates)[sym]
+        prices = prices.reset_index()
+        y = []
+        for x in prices.index:
+            if x + N in prices.index:
+                ret = (prices[symbol][x]/prices[symbol][x+N])-1
+                if ret > YBUY:
+                    y.append(-1)
+                elif ret < YSELL:
+                    y.append(1)
+                else:
+                    y.append(0)
+            else:
+                y.append(0)
+        yVal = np.array(y)
+
+        self.baglearner.add_evidence(orders,yVal)
+
   		  	   		  		 			  		 			     			  	 
     # this method should use the existing policy and test it against new data  		  	   		  		 			  		 			     			  	 
     def testPolicy(  		  	   		  		 			  		 			     			  	 
@@ -109,7 +146,7 @@ class StrategyLearner(object):
         symbol="IBM",  		  	   		  		 			  		 			     			  	 
         sd=dt.datetime(2009, 1, 1),  		  	   		  		 			  		 			     			  	 
         ed=dt.datetime(2010, 1, 1),  		  	   		  		 			  		 			     			  	 
-        sv=10000,  		  	   		  		 			  		 			     			  	 
+        sv=10000,  	   		  		 			  		 			     			  	 
     ):  		  	   		  		 			  		 			     			  	 
         """  		  	   		  		 			  		 			     			  	 
         Tests your learner using data outside of the training data  		  	   		  		 			  		 			     			  	 
@@ -128,27 +165,76 @@ class StrategyLearner(object):
             long so long as net holdings are constrained to -1000, 0, and 1000.  		  	   		  		 			  		 			     			  	 
         :rtype: pandas.DataFrame  		  	   		  		 			  		 			     			  	 
         """  		  	   		  		 			  		 			     			  	 
-  		  	   		  		 			  		 			     			  	 
+        TEMAorders = ind.TEMA(symbol,sd,ed)
+        TEMAorders = TEMAorders.to_numpy()
+        min_val = np.min(TEMAorders)
+        max_val = np.max(TEMAorders)
+        # Normalize the array to be between -1 and 1
+        TEMAorders = (2*(TEMAorders - min_val)/(max_val - min_val))
+
+        ROCorders = ind.ROC(symbol,sd,ed)
+        ROCorders = ROCorders.to_numpy()
+        min_val = np.min(ROCorders)
+        max_val = np.max(ROCorders)
+        # Normalize the array to be between -1 and 1
+        ROCorders = (2*(ROCorders - min_val)/(max_val - min_val)) - 1
+
+        RSIorders = ind.RSI(symbol,sd,ed)	
+        RSIorders = RSIorders.to_numpy()
+        min_val = np.min(RSIorders)
+        max_val = np.max(RSIorders)
+        # Normalize the array to be between -1 and 1
+        RSIorders = (2*(RSIorders - min_val)/(max_val - min_val))
+
+        orders = np.column_stack((TEMAorders, ROCorders ,RSIorders))
+
+        y = self.baglearner.query(orders)
         # here we build a fake set of trades  		  	   		  		 			  		 			     			  	 
         # your code should return the same sort of data  		  	   		  		 			  		 			     			  	 
-        dates = pd.date_range(sd, ed)  		  	   		  		 			  		 			     			  	 
-        prices_all = ut.get_data([symbol], dates)  # automatically adds SPY  		  	   		  		 			  		 			     			  	 
-        trades = prices_all[[symbol,]]  # only portfolio symbols  		  	   		  		 			  		 			     			  	 
-        trades_SPY = prices_all["SPY"]  # only SPY, for comparison later  		  	   		  		 			  		 			     			  	 
-        trades.values[:, :] = 0  # set them all to nothing  	  	   		  		 			  		 			     			  	 
-        trades.values[0, :] = 1000  # add a BUY at the start  		  	   		  		 			  		 			     			  	 
-        trades.values[40, :] = -1000  # add a SELL  		  	   		  		 			  		 			     			  	 
-        trades.values[41, :] = 1000  # add a BUY  		  	   		  		 			  		 			     			  	 
-        trades.values[60, :] = -2000  # go short from long  		  	   		  		 			  		 			     			  	 
-        trades.values[61, :] = 2000  # go long from short  		  	   		  		 			  		 			     			  	 
-        trades.values[-1, :] = -1000  # exit on the last day  		  	   		  		 			  		 			     			  	 
-        if self.verbose:  		  	   		  		 			  		 			     			  	 
-            print(type(trades))  # it better be a DataFrame!  		  	   		  		 			  		 			     			  	 
-        if self.verbose:  		  	   		  		 			  		 			     			  	 
-            print(trades)  		  	   		  		 			  		 			     			  	 
-        if self.verbose:  		  	   		  		 			  		 			     			  	 
-            print(prices_all)  		  	   		  		 			  		 			     			  	 
-        return trades  		  	   		  		 			  		 			     			  	 
+        dates = pd.date_range(sd, ed)  
+        sym = []
+        sym.append(symbol)
+        prices = ut.get_data(sym, dates)[sym]
+
+        orders = prices.copy()
+        orders[symbol] = 0.0
+
+        currentHolding = 0.0
+        index = 0
+        for x in prices.index:
+            if y[index] == 1:
+                if currentHolding == 0.0:
+                    orders[symbol][x] = 1000.0
+                    currentHolding = 1000.0
+                elif currentHolding == 1000.0:
+                    orders[symbol][x] = 0.0
+                    currentHolding = 1000.0
+                elif currentHolding == -1000.0:
+                    orders[symbol][x] = 2000.0
+                    currentHolding = 1000.0
+            elif y[index] == -1:
+                if currentHolding == 0.0:
+                    orders[symbol][x] = -1000.0
+                    currentHolding = -1000.0
+                elif currentHolding == 1000.0:
+                    orders[symbol][x] = -2000.0
+                    currentHolding = -1000.0
+                elif currentHolding == -1000.0:
+                    orders[symbol][x] = 0.0
+                    currentHolding = -1000.0
+            elif y[index] == 0:
+                if currentHolding == 0.0:
+                    orders[symbol][x] = 0.0
+                    currentHolding = 0.0
+                elif currentHolding == 1000.0:
+                    orders[symbol][x] = -1000.0
+                    currentHolding = 0.0
+                elif currentHolding == -1000.0:
+                    orders[symbol][x] = 1000
+                    currentHolding = 0.0
+            index += 1
+        
+        return orders
   		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
 if __name__ == "__main__":  		  	   		  		 			  		 			     			  	 

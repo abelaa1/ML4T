@@ -8,22 +8,83 @@ import pandas as pd
 from util import get_data, plot_data
 
 def testPolicy(symbol = "AAPL", sd=dt.datetime(2010, 1, 1), ed=dt.datetime(2011,12,31), sv = 100000):
-    TEMAorders = ind.TEMA(symbol,sd,ed)
-    ROCorders = ind.ROC(symbol,sd,ed)
-    RSIorders = ind.RSI(symbol,sd,ed)
-
     dates = pd.date_range(sd, ed)  
-    orders = pd.DataFrame(index=dates)
-    orders[symbol] = 0.0
-
     sym = []
     sym.append(symbol)
     prices = get_data(sym, dates)[sym]
 
+
+    tema = ind.TEMA(symbol,sd,ed)
+    TEMAorders = prices.copy()
+    TEMAorders[symbol] = 0
+
+    current = 0
+    for x in prices.index:
+        if not np.isnan(tema[x]):
+            if prices[symbol][x] > (tema[x]*1.1):
+                TEMAorders[symbol][x] = 1
+                current = 1
+            elif prices[symbol][x] < (tema[x]*0.9):
+                TEMAorders[symbol][x] = -1
+                current = -1
+            else:
+                TEMAorders[symbol][x] = current
+    
+    TEMAorders[symbol][prices.last_valid_index()] = 0
+
+
+    roc = ind.ROC(symbol,sd,ed)
+    ROCorders = prices.copy()
+    ROCorders[symbol] = 0
+
+    current = 0
+    for x in prices.index:
+        if not np.isnan(roc[x]):
+            if roc[x] > 20:
+                ROCorders[symbol][x] = 1
+                current = 1
+            elif roc[x] < -20:
+                ROCorders[symbol][x] = -1
+                current = -1
+            else:
+                ROCorders[symbol][x] = current
+    
+    ROCorders[symbol][prices.last_valid_index()] = 0
+
+
+    rsi = ind.RSI(symbol,sd,ed)
+    RSIorders = prices.copy()
+    RSIorders[symbol] = 0
+
+    current = 0
+    upperflag = 0
+    lowerflag = 0
+    for x in prices.index:
+        if not np.isnan(rsi[x]):
+            if rsi[x] > 70:
+                upperflag = 1
+            elif rsi[x] < 30:
+                lowerflag = 1
+            if upperflag == 1 and rsi[x] < 70:
+                upperflag = 0
+                RSIorders[symbol][x] = -1
+                current = -1
+            elif lowerflag ==1 and rsi[x] > 30:
+                lowerflag = 0
+                RSIorders[symbol][x] = 1
+                current = 1
+            else:
+                RSIorders[symbol][x] = current
+    
+    RSIorders[symbol][prices.last_valid_index()] = 0
+
+    orders = prices.copy()
+    orders[symbol] = 0.0
+
     currentHolding = 0.0
     for x in prices.index:
         temp = TEMAorders[symbol][x] + ROCorders[symbol][x] + RSIorders[symbol][x]
-        if temp > 2:
+        if temp >= 2:
             if currentHolding == 0.0:
                 orders[symbol][x] = 1000.0
                 currentHolding = 1000.0
@@ -33,7 +94,7 @@ def testPolicy(symbol = "AAPL", sd=dt.datetime(2010, 1, 1), ed=dt.datetime(2011,
             elif currentHolding == -1000.0:
                 orders[symbol][x] = 2000.0
                 currentHolding = 1000.0
-        elif temp < -2:
+        elif temp <= -2:
             if currentHolding == 0.0:
                 orders[symbol][x] = -1000.0
                 currentHolding = -1000.0
@@ -43,7 +104,7 @@ def testPolicy(symbol = "AAPL", sd=dt.datetime(2010, 1, 1), ed=dt.datetime(2011,
             elif currentHolding == -1000.0:
                 orders[symbol][x] = 0.0
                 currentHolding = -1000.0
-        elif temp == 0:
+        else:
             if currentHolding == 0.0:
                 orders[symbol][x] = 0.0
                 currentHolding = 0.0

@@ -19,15 +19,30 @@ def author():
     return "aaguilar61"
 
 def test():
+    np.random.seed(16)
+    # sym = "SINE_FAST_NOISE"
+    # sym = "AAPL"
     sym = "JPM"
     stv = 100000
-    df_tradesBench = tos.benchMark(symbol = sym, sd=dt.datetime(2008, 1, 1), ed=dt.datetime(2009,12,31), sv = stv)
-    # ind_orders = ms.testPolicy(symbol = sym, sd=dt.datetime(2008, 1, 1), ed=dt.datetime(2009,12,31))
+    startD = dt.datetime(2008, 1, 1) #In
+    endD = dt.datetime(2009,12,31) #In
+    dates = pd.date_range(startD, endD) 
+
+    # plot_data(get_data([sym],dates))
+
+    startDO = dt.datetime(2010, 1, 1) #Out
+    endDO = dt.datetime(2011,12,31) #Out
+
+    df_tradesBench = tos.benchMark(symbol = sym, sd=startD, ed=endD, sv = stv)
+    ind_orders = ms.testPolicy(symbol = sym, sd=startD, ed=endD)
     # portVal = msc.compute_portvals(ind_orders,sym,stv,commission=0.0,impact=0.0)
 
-    # msc.test_code(ind_orders,df_tradesBench,sym,stv)
-    df = sl.StrategyLearner(verbose=True)
-    ord = df.testPolicy()
+    msc.test_code(ind_orders,df_tradesBench,sym,stv)
+
+    df = sl.StrategyLearner()
+    df.add_evidence(sym,startD,endD,stv)
+    rantree = df.testPolicy(sym,startD,endD,stv)
+    msc.test_code(rantree,df_tradesBench,sym,stv)
 
 
 
