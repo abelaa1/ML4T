@@ -142,7 +142,9 @@ def test_code(
     ordersBest,
     ordersBench, 
     symbol, 		  	   		  		 			  		 			     			  	 
-    start_val=1000000,		  	   		  		 			  		 			     			  	 
+    start_val=1000000,	
+    commission = 0.0,
+    impact = 0.0	  	   		  		 			  		 			     			  	 
 ):   		  	   		  		 			  		 			     			  	 
     """  		  	   		  		 			  		 			     			  	 
     Helper function to test code  		  	   		  		 			  		 			     			  	 
@@ -156,14 +158,14 @@ def test_code(
     sv = start_val		  	   		  		 			  		 			     			  	 
   		  	   		  		 			  		 			     			  	 
     # Process orders  		  	   		  		 			  		 			     			  	 
-    portvals = compute_portvals(orders_file=of, symbol=symbol, start_val=sv, commission=0.0, impact=0.0)  		  	   		  		 			  		 			     			  	 
+    portvals = compute_portvals(orders_file=of, symbol=symbol, start_val=sv, commission=commission, impact=impact)  		  	   		  		 			  		 			     			  	 
     if isinstance(portvals, pd.DataFrame):  		  	   		  		 			  		 			     			  	 
         portvals = portvals[portvals.columns[0]]  # just get the first column  		  	   		  		 			  		 			     			  	 
     else:  		  	   		  		 			  		 			     			  	 
         "warning, code did not return a DataFrame"  
 
 
-    portvalsBench = compute_portvals(orders_file=ofb, symbol=symbol, start_val=sv, commission=0.0, impact=0.0)  		  	   		  		 			  		 			     			  	 
+    portvalsBench = compute_portvals(orders_file=ofb, symbol=symbol, start_val=sv, commission=commission, impact=impact)  		  	   		  		 			  		 			     			  	 
     if isinstance(portvalsBench, pd.DataFrame):  		  	   		  		 			  		 			     			  	 
         portvalsBench = portvalsBench[portvalsBench.columns[0]]  # just get the first column  		  	   		  		 			  		 			     			  	 
     else:  		  	   		  		 			  		 			     			  	 

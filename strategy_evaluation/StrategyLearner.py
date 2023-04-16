@@ -98,7 +98,7 @@ class StrategyLearner(object):
         TEMAorders = TEMAorders.to_numpy()
         min_val = np.min(TEMAorders)
         max_val = np.max(TEMAorders)
-        # Normalize the array to be between -1 and 1
+        # Normalize the array to be between 0 and 1
         TEMAorders = (2*(TEMAorders - min_val)/(max_val - min_val))
 
         ROCorders = ind.ROC(symbol,sd,ed)
@@ -112,7 +112,7 @@ class StrategyLearner(object):
         RSIorders = RSIorders.to_numpy()
         min_val = np.min(RSIorders)
         max_val = np.max(RSIorders)
-        # Normalize the array to be between -1 and 1
+        # Normalize the array to be between 0 and 1
         RSIorders = (2*(RSIorders - min_val)/(max_val - min_val))
 
         # https://numpy.org/doc/stable/reference/generated/numpy.column_stack.html
@@ -127,9 +127,9 @@ class StrategyLearner(object):
         for x in prices.index:
             if x + N in prices.index:
                 ret = (prices[symbol][x]/prices[symbol][x+N])-1
-                if ret > YBUY:
+                if ret > (YBUY * (1.0+self.impact) * (1+(self.commission/prices[symbol][x]))):
                     y.append(-1)
-                elif ret < YSELL:
+                elif ret < (YSELL * (1.0-self.impact) * (1-(self.commission/prices[symbol][x]))):
                     y.append(1)
                 else:
                     y.append(0)
@@ -169,7 +169,7 @@ class StrategyLearner(object):
         TEMAorders = TEMAorders.to_numpy()
         min_val = np.min(TEMAorders)
         max_val = np.max(TEMAorders)
-        # Normalize the array to be between -1 and 1
+        # Normalize the array to be between 0 and 1
         TEMAorders = (2*(TEMAorders - min_val)/(max_val - min_val))
 
         ROCorders = ind.ROC(symbol,sd,ed)
@@ -183,7 +183,7 @@ class StrategyLearner(object):
         RSIorders = RSIorders.to_numpy()
         min_val = np.min(RSIorders)
         max_val = np.max(RSIorders)
-        # Normalize the array to be between -1 and 1
+        # Normalize the array to be between 0 and 1
         RSIorders = (2*(RSIorders - min_val)/(max_val - min_val))
 
         orders = np.column_stack((TEMAorders, ROCorders ,RSIorders))
