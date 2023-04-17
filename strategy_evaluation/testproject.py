@@ -106,8 +106,8 @@ def test():
     plt.savefig("images/figure2.png")
     plt.clf()
 
-    cum_retOut, avg_daily_retOut, std_daily_retOut, sharpe_ratioOut = msc.findPortStats(portVal_ind)	
-    cum_ret_BenchOut, avg_daily_ret_BenchOut, std_daily_ret_BenchOut, sharpe_ratio_BenchOut = msc.findPortStats(portVal_benchmark)
+    cum_retOut, avg_daily_retOut, std_daily_retOut, sharpe_ratioOut = msc.findPortStats(portVal_indOut)	
+    cum_ret_BenchOut, avg_daily_ret_BenchOut, std_daily_ret_BenchOut, sharpe_ratio_BenchOut = msc.findPortStats(portVal_benchmarkOut)
 
     # print(f"Sharpe Ratio of Fund: {sharpe_ratioOut}")  		  	   		  		 			  		 			     			  	 
     # print(f"Sharpe Ratio of Benchmark : {sharpe_ratio_BenchOut}")  		  	   		  		 			  		 			     			  	 
