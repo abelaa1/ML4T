@@ -39,7 +39,7 @@ The course provided hands-on experience with:
 
 ## 🚀 Projects
 ### **Predicting Stock Prices**
-- Built a linear supervised learning model to predict stock price movements based on historical data.
+- Built a supervised learning model to predict stock price movements based on historical data.
 - Evaluated model accuracy and adjusted for overfitting using cross-validation.
 
 ---
